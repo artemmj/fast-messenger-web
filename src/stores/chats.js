@@ -1,4 +1,3 @@
-// src/stores/chats.js (полностью, замени весь файл)
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { chatsApi } from '@/api/chats'
@@ -72,7 +71,11 @@ export const useChatsStore = defineStore('chats', () => {
       chats.value.unshift(chat) // поднимаем наверх
     }
 
-    if (activeChatId.value !== chatId) {
+    const isOwnMessage =
+      data?.sender_id != null &&
+      auth.myUserId != null &&
+      String(data.sender_id) === String(auth.myUserId)
+    if (activeChatId.value !== chatId && !isOwnMessage) {
       unread.value[chatId] = (unread.value[chatId] || 0) + 1
     }
   }

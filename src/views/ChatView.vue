@@ -1,6 +1,5 @@
-<!-- src/views/ChatView.vue (полностью, замени весь файл) -->
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useChatsStore } from '@/stores/chats'
 import { useMessagesStore } from '@/stores/messages'
@@ -71,8 +70,13 @@ async function retry(m) {
 }
 
 onMounted(async () => {
+  chatsStore.setActiveChat(chatId)
   await messagesStore.fetchMessages(chatId, true)
   scrollToBottom()
+})
+
+onBeforeUnmount(() => {
+  if (chatsStore.activeChatId === chatId) chatsStore.clearActiveChat()
 })
 
 async function send(text) {

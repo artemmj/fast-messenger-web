@@ -67,7 +67,14 @@ onBeforeUnmount(() => socket?.close())
 </script>
 
 <template>
-    <div class="messenger">
+    <div
+        class="messenger"
+        :class="{
+            'mobile-chat-open': route.name === 'chat',
+            'mobile-list-open': route.name === 'chats',
+            'mobile-profile-open': route.name === 'profile',
+        }"
+    >
         <aside class="sidebar">
             <div class="sidebar-header">
                 <router-link class="logo" :to="{ name: 'chats' }">Быстромессенджер (БЕТА)</router-link>

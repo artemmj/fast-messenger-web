@@ -39,10 +39,10 @@ body {
 }
 
 /* ---------- Login / Register ---------- */
-.login-page { display: grid; place-items: center; min-height: 100vh; }
+.login-page { display: grid; place-items: center; min-height: 100vh; min-height: 100dvh; padding: 16px; }
 .login-card {
   display: flex; flex-direction: column; gap: 16px;
-  width: 360px; padding: 32px;
+  width: min(360px, calc(100vw - 32px)); padding: 32px;
   background: var(--surface);
   border: 1px solid var(--divider);
   border-radius: 12px;
@@ -236,3 +236,96 @@ body {
 .message.pending .bubble { opacity: .55; }
 .message.failed .bubble { border: 1px solid var(--error); cursor: pointer; }
 .message.failed .msg-time { color: var(--error); opacity: 1; }
+
+@media (max-width: 700px) {
+  .messenger {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex: 1 1 100%;
+    min-width: 0;
+    border-right: 0;
+  }
+
+  .sidebar-header {
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+
+  .logo { font-size: 15px; }
+
+  .chat-area {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .mobile-chat-open .sidebar,
+  .mobile-profile-open .sidebar,
+  .mobile-list-open .chat-area {
+    display: none;
+  }
+
+  .chat-header {
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-left: 12px;
+  }
+
+  .chat-header .icon-btn,
+  .sidebar-header .icon-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .messages {
+    padding: 16px 12px;
+  }
+
+  .message { max-width: 88%; }
+
+  .message-input {
+    gap: 8px;
+    padding: 10px 12px max(10px, env(safe-area-inset-bottom));
+  }
+
+  .message-input input {
+    min-width: 0;
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+
+  .message-input button {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+  }
+
+  .profile { padding: 16px 12px max(16px, env(safe-area-inset-bottom)); }
+
+  .profile-card {
+    padding: 20px 16px;
+    gap: 20px;
+  }
+
+  .info > div {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .info dd { min-width: 0; overflow-wrap: anywhere; }
+
+  .login-card input,
+  .edit input { font-size: 16px; }
+}
+
+@media (max-width: 380px) {
+  .sidebar-header { padding-right: 10px; padding-left: 12px; }
+  .header-actions { gap: 0; }
+  .chat-header { gap: 8px; }
+  .chat-header .sub { font-size: 11.5px; }
+  .profile-card { padding: 16px 12px; }
+  .info > div { font-size: 13px; }
+}
