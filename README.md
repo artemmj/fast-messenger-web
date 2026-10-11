@@ -1,38 +1,56 @@
-# messenger
+# Быстромессенджер
 
-This template should help get you started developing with Vue 3 in Vite.
+Веб-клиент мессенджера на Vue 3. Сейчас доступны регистрация и вход по телефону и паролю, профиль пользователя, список личных и групповых чатов, история сообщений и отправка текста. Интерфейс оформлен в тёмной теме. Приложение использует отдельный HTTP API; адрес задаётся через `VITE_API_BASE_URL`.
 
-## Recommended IDE Setup
+## Структура проекта
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+```text
+.
+├── public/                 # статические ресурсы
+├── src/
+│   ├── api/                # Axios-клиент и методы auth/users/chats
+│   ├── assets/             # общие стили и тема
+│   ├── components/chat/    # список чатов и поле ввода сообщения
+│   ├── composables/        # маска телефона и обработка Escape
+│   ├── layouts/            # основной интерфейс с боковой панелью
+│   ├── stores/             # состояние авторизации, чатов и сообщений (Pinia)
+│   ├── utils/              # форматирование телефона и чтение JWT payload
+│   ├── views/              # экраны входа, регистрации, чатов, переписки и профиля
+│   ├── App.vue
+│   ├── main.js
+│   └── router/             # маршруты и проверка авторизации
+├── .env.example            # пример переменных окружения
+├── package.json
+└── vite.config.js
+```
 
-## Recommended Browser Setup
+## Запуск
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+Требуется Node.js `^22.18.0` или `>=24.12.0`.
 
 ```sh
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
+cp .env.example .env
+# При необходимости укажите адрес API в VITE_API_BASE_URL
 npm run dev
 ```
 
-### Compile and Minify for Production
+Для production-сборки используйте `npm run build`, для локального просмотра собранного приложения — `npm run preview`. По умолчанию пример конфигурации направляет запросы к `http://localhost:8000`.
 
-```sh
-npm run build
-```
+## Реализовано
+
+- Регистрация с проверкой совпадения паролей и автоматическим входом; вход и восстановление пользователя после перезагрузки.
+- Защищённые маршруты и перенаправление неавторизованных пользователей на вход.
+- Просмотр списка личных и групповых чатов, названий собеседников и количества участников.
+- Загрузка истории и отправка текстовых сообщений с оптимистичным отображением и внутренней заготовкой для повторной отправки.
+- Просмотр и изменение email и пароля в профиле; выход из аккаунта.
+
+## Дальнейшая работа
+
+Предлагаемый план на основе текущего состояния кода (подробности и последовательность — в [AGENTS.md](AGENTS.md)):
+
+1. Сначала стабилизировать существующие сценарии: исправить повторную загрузку/отправку сообщений и синхронизацию состояния авторизации, добавить тесты и предсказуемую обработку ошибок.
+2. Затем завершить основные сценарии общения: создание чатов и актуализацию переписки в реальном времени — после согласования возможностей и контракта серверного API.
+3. В дальнейшем добавить поиск и пагинацию, статусы прочтения и уведомления, улучшить адаптивность и доступность интерфейса.
+
+На данный момент в `package.json` настроены команды запуска, сборки и preview; отдельные команды тестирования и линтинга не настроены.

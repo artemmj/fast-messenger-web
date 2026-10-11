@@ -27,8 +27,13 @@ onMounted(() => chatsStore.fetchChats())
         <span class="chat-row-top">
           <span class="chat-icon">{{ chat.type === 'group' ? '👥' : '👤' }}</span>
           <strong>{{ chatsStore.chatTitle(chat) }}</strong>
+          <span v-if="chatsStore.unreadCount(chat.id)" class="unread-badge">
+            {{ chatsStore.unreadCount(chat.id) > 99 ? '99+' : chatsStore.unreadCount(chat.id) }}
+          </span>
         </span>
-        <span>{{ chatsStore.chatSubtitle(chat) }}</span>
+        <span class="chat-last">
+          {{ chat.last_message_text || chatsStore.chatSubtitle(chat) }}
+        </span>
       </router-link>
     </li>
   </ul>

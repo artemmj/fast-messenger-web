@@ -107,7 +107,6 @@ body {
 .chat-list a:hover { background: var(--hover); }
 .chat-list a.router-link-active { background: var(--primary-dim); }
 .chat-list strong { font-size: 15px; font-weight: 500; }
-.chat-list span { color: var(--text-secondary); font-size: 13px; }
 
 /* ---------- Chat area ---------- */
 .chat-area { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
@@ -235,3 +234,44 @@ body {
 .message.pending .bubble { opacity: .55; }
 .message.failed .bubble { border: 1px solid var(--error); cursor: pointer; }
 .message.failed .msg-time { color: var(--error); opacity: 1; }
+
+/* Непрочитанные и превью в списке чатов */
+.unread-badge {
+  margin-left: auto;
+  background: var(--primary); color: var(--on-primary);
+  font-size: 11px; font-weight: 700;
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.chat-last {
+  display: block;
+  color: var(--text-secondary); font-size: 13px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Индикатор соединения */
+.ws-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text-hint); align-self: center; margin-right: 4px;
+  transition: background .3s;
+}
+.ws-dot.on { background: #81C784; }
+
+/* Тосты */
+.toasts {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 1000; align-items: center;
+}
+.toast {
+  background: var(--surface-3); color: var(--text);
+  border: 1px solid var(--divider);
+  padding: 12px 20px; border-radius: 10px;
+  box-shadow: var(--shadow-2);
+  font-size: 14px; cursor: pointer; max-width: 90vw;
+}
+.toast.error { border-color: var(--error); }
+.toast-enter-active, .toast-leave-active { transition: all .25s ease; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(8px); }
