@@ -1,9 +1,15 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { formatPhone } from '@/utils/format'
+import { useEscape } from '@/composables/useEscape'
 
 const auth = useAuthStore()
+const router = useRouter()
+
+// Esc — вернуться к выбору чата
+useEscape(() => router.push({ name: 'chats' }))
 
 const email = ref('')
 const newPassword = ref('')
@@ -33,7 +39,6 @@ async function save() {
         return
     }
 
-    // Отправляем ТОЛЬКО изменённые непустые поля — PATCH-семантика
     const patch = {}
     if (email.value.trim() && email.value.trim() !== (auth.user?.email ?? '')) {
         patch.email = email.value.trim()
@@ -60,26 +65,33 @@ async function save() {
         saving.value = false
     }
 }
+
+function close() {
+    router.push({ name: 'chats' })
+}
 </script>
 
 <template>
     <div class="profile">
         <div v-if="auth.user" class="profile-card">
-        <h2>Профиль</h2>
+        <div class="card-header">
+            <h2>Профиль</h2>
+            <button class="icon-btn" title="Закрыть (Esc)" aria-label="Закрыть" @click="close">✕</button>
+        </div>
 
         <dl class="info">
             <div><dt>Телефон</dt><dd>{{ formatPhone(auth.user.phone) }}</dd></div>
             <div><dt>Email</dt><dd>{{ auth.user.email || '—' }}</dd></div>
             <div><dt>ID</dt><dd class="mono">{{ auth.user.id }}</dd></div>
             <div>
-                <dt>Статус</dt>
-                <dd>
-                    <span class="badge" :class="auth.user.is_active ? 'ok' : 'bad'">
-                    {{ auth.user.is_active ? 'активен' : 'неактивен' }}
-                    </span>
-                    <span v-if="auth.user.is_banned" class="badge bad">заблокирован</span>
-                    <span v-if="auth.user.is_verified" class="badge ok">верифицирован</span>
-                </dd>
+            <dt>Статус</dt>
+            <dd>
+                <span class="badge" :class="auth.user.is_active ? 'ok' : 'bad'">
+                {{ auth.user.is_active ? 'активен' : 'неактивен' }}
+                </span>
+                <span v-if="auth.user.is_banned" class="badge bad">заблокирован</span>
+                <span v-if="auth.user.is_verified" class="badge ok">верифицирован</span>
+            </dd>
             </div>
             <div><dt>Создан</dt><dd>{{ createdAt }}</dd></div>
             <div><dt>Обновлён</dt><dd>{{ updatedAt }}</dd></div>

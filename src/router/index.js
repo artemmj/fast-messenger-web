@@ -23,7 +23,7 @@ const router = createRouter({
       children: [
         { path: '', redirect: { name: 'chats' } },
         { path: 'chats', name: 'chats', component: () => import('@/views/ChatsView.vue') },
-        { path: 'chats/:id', name: 'chat', component: () => import('@/views/ChatsView.vue') },
+        { path: 'chats/:id', name: 'chat', component: () => import('@/views/ChatView.vue') },
         { path: 'profile', name: 'profile', component: () => import('@/views/ProfileView.vue') },
       ],
     },
@@ -34,11 +34,10 @@ const router = createRouter({
 router.beforeEach((to) => {
   const auth = useAuthStore()
 
-  // неавторизованного на защищённый роут -> на логин
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
-  // авторизованного на /login -> в чаты
+
   if (to.meta.guest && auth.isAuthenticated) {
     return { name: 'chats' }
   }
