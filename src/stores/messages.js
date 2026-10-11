@@ -21,6 +21,21 @@ export const useMessagesStore = defineStore('messages', () => {
         try {
             const { data } = await chatsApi.getMessages(chatId)
             const list = Array.isArray(data) ? data : []
+            for (const message of s.messages) {
+                if (
+                    (String(message.id).startsWith('signal:') || message.status === 'pending' || message.status === 'failed') &&
+                    !list.some((loaded) =>
+                        loaded.id === message.id ||
+                        (
+                            loaded.user_id === message.user_id &&
+                            loaded.text === message.text &&
+                            Date.parse(loaded.created_at) === Date.parse(message.created_at)
+                        )
+                    )
+                ) {
+                    list.push(message)
+                }
+            }
             list.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
             s.messages = list
             s.loaded = true
@@ -37,6 +52,7 @@ export const useMessagesStore = defineStore('messages', () => {
         const s = ensure(chatId)
         if (s.messages.some((m) => m.id === message.id)) return
         s.messages.push(message)
+        s.messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
     }
 
     // Оптимистичная отправка: временный пузырь -> подтверждение с бэка

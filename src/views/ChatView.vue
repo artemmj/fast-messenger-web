@@ -1,3 +1,4 @@
+<!-- src/views/ChatView.vue (полностью, замени весь файл) -->
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -11,15 +12,14 @@ import { useEscape } from '@/composables/useEscape'
 const route = useRoute()
 const router = useRouter()
 
-// Обычная строка. Перемонтирование при смене чата гарантирует
-// :key="route.path" на <router-view> в MainLayout.
+// Обычная строка. Перемонтирование гарантирует :key="route.path" в MainLayout,
+// так что при смене чата этот файл создается заново с новым id.
 const chatId = route.params.id
 
 const chatsStore = useChatsStore()
 const messagesStore = useMessagesStore()
 const auth = useAuthStore()
 
-// Если пришли по прямой ссылке, а список чатов ещё не грузился
 chatsStore.fetchChats()
 
 const chat = computed(() => chatsStore.chatById(chatId))
@@ -32,7 +32,7 @@ const messagesError = computed(() => chatState.value?.error ?? null)
 
 const messagesEl = ref(null)
 
-// ---------- Вспомогательные ----------
+watch(() => messages.value.length, scrollToBottom)
 
 function isMine(m) {
   return m.user_id === auth.myUserId
@@ -58,41 +58,22 @@ function fmtTime(iso) {
   }
 }
 
-// ---------- Скролл ----------
-
 async function scrollToBottom() {
   await nextTick()
   if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
 }
 
-function isNearBottom() {
-  const el = messagesEl.value
-  if (!el) return true
-  return el.scrollHeight - el.scrollTop - el.clientHeight < 120
+async function retry(m) {
+  if (m.status !== 'failed') return
+  const promise = messagesStore.retryMessage(chatId, m, auth.myUserId)
+  scrollToBottom()
+  await promise
 }
-
-// Новое сообщение (WS или оптимистичное): автоскролл,
-// только если пользователь и так был у низа ленты
-watch(
-  () => messages.value.length,
-  (n, oldN) => {
-    if (n > (oldN ?? 0) && isNearBottom()) scrollToBottom()
-  }
-)
-
-// ---------- Загрузка ----------
 
 onMounted(async () => {
   await messagesStore.fetchMessages(chatId, true)
   scrollToBottom()
 })
-
-async function retryLoad() {
-  await messagesStore.fetchMessages(chatId, true)
-  scrollToBottom()
-}
-
-// ---------- Отправка ----------
 
 async function send(text) {
   // temp-пузырь добавляется синхронно — скроллим сразу, не ждём сервер
@@ -100,15 +81,6 @@ async function send(text) {
   scrollToBottom()
   await promise
 }
-
-async function retrySend(m) {
-  if (m.status !== 'failed') return
-  const promise = messagesStore.retryMessage(chatId, m, auth.myUserId)
-  scrollToBottom()
-  await promise
-}
-
-// ---------- Закрытие ----------
 
 function close() {
   router.push({ name: 'chats' })
@@ -144,7 +116,7 @@ useEscape(close)
 
       <div v-else-if="messagesError" class="placeholder">
         <p>{{ messagesError }}</p>
-        <button class="retry" @click="retryLoad">Повторить</button>
+        <button class="retry" @click="retry">Повторить</button>
       </div>
 
       <div v-else-if="!messages.length" class="placeholder">
@@ -157,24 +129,12 @@ useEscape(close)
           v-for="(m, idx) in messages"
           :key="m.id"
           class="message"
-          :class="{
-            mine: isMine(m),
-            pending: m.status === 'pending',
-            failed: m.status === 'failed',
-          }"
+          :class="{ mine: isMine(m) }"
         >
           <span v-if="showAuthor(m, idx)" class="msg-author">{{ senderName(m) }}</span>
-          <div
-            class="bubble"
-            :title="m.status === 'failed' ? 'Не отправлено — нажмите, чтобы повторить' : undefined"
-            @click="retrySend(m)"
-          >
+          <div class="bubble">
             <span class="msg-text">{{ m.text }}</span>
-            <span class="msg-time">
-              {{ fmtTime(m.created_at) }}
-              <span v-if="m.status === 'pending'">🕐</span>
-              <span v-else-if="m.status === 'failed'">⚠</span>
-            </span>
+            <span class="msg-time">{{ fmtTime(m.created_at) }}</span>
           </div>
         </div>
       </div>
