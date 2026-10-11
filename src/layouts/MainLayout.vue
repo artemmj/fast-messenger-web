@@ -2,10 +2,12 @@
 import { onBeforeUnmount, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useChatsStore } from '@/stores/chats'
 import { useMessagesStore } from '@/stores/messages'
 import ChatList from '@/components/chat/ChatList.vue'
 
 const auth = useAuthStore()
+const chatsStore = useChatsStore()
 const messagesStore = useMessagesStore()
 const router = useRouter()
 const route = useRoute()
@@ -21,28 +23,19 @@ function buildUrl(token) {
     return url.toString()
 }
 
-function handleChatSignal(event) {
-    if (event?.event !== 'chat_signal') return
-
+function handleSocketMessage(event) {
     const { chat_id: chatId, data } = event
-    const { last_message_text: text, last_message_time: createdAt, sender_id: userId } = data ?? {}
-    if (
-        typeof chatId !== 'string' ||
-        typeof text !== 'string' ||
-        typeof createdAt !== 'string' ||
-        Number.isNaN(Date.parse(createdAt)) ||
-        typeof userId !== 'string'
-    ) {
-        console.warn('Ignoring malformed chat_signal event', event)
-        return
-    }
+    if (typeof chatId !== 'string' || !data) return
 
-    messagesStore.addMessage(chatId, {
-        id: `signal:${chatId}:${userId}:${createdAt}:${text}`,
-        user_id: userId,
-        text,
-        created_at: createdAt,
-    })
+    if (event.event === 'new_message') {
+        if (data.id == null || data.user_id == null || data.text == null || data.created_at == null) {
+            console.warn('Ignoring malformed new_message event', event)
+            return
+        }
+        messagesStore.addMessage(chatId, data)
+    } else if (event.event === 'chat_signal') {
+        chatsStore.applySignal(chatId, data)
+    }
 }
 
 function connectSocket() {
@@ -57,7 +50,7 @@ function connectSocket() {
             console.error('Failed to parse WebSocket message', error)
             return
         }
-        handleChatSignal(event)
+        handleSocketMessage(event)
     })
     socket.addEventListener('error', (error) => {
         console.error('WebSocket connection error', error)

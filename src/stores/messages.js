@@ -69,9 +69,15 @@ export const useMessagesStore = defineStore('messages', () => {
 
         try {
             const { data } = await chatsApi.sendMessage(chatId, { text })
-            // заменяем temp на настоящий объект с серверным id и временем
-            const idx = s.messages.findIndex((m) => m.id === temp.id)
-            if (idx !== -1) s.messages[idx] = { ...data, status: 'sent' }
+            const tempIdx = s.messages.findIndex((m) => m.id === temp.id)
+            const serverIdx = s.messages.findIndex((m) => m.id === data.id)
+            if (serverIdx !== -1) {
+                s.messages[serverIdx] = { ...s.messages[serverIdx], ...data, status: 'sent' }
+                if (tempIdx !== -1) s.messages.splice(tempIdx, 1)
+            } else if (tempIdx !== -1) {
+                s.messages[tempIdx] = { ...data, status: 'sent' }
+            }
+            s.messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
             return { ok: true }
         } catch {
             const m = s.messages.find((x) => x.id === temp.id)
