@@ -26,6 +26,9 @@ export const useAuthStore = defineStore('auth', () => {
     const error = ref(null)
 
     const isAuthenticated = computed(() => Boolean(accessToken.value))
+    const myUserId = computed(
+        () => user.value?.id ?? decodeJwtPayload(accessToken.value)?.user_id ?? null
+    )
 
     function setSession({ access_token, session_id }) {
         accessToken.value = access_token
@@ -102,7 +105,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     return {
-        accessToken, sessionId, user, loading, error, isAuthenticated,
+        accessToken, sessionId, user, loading, error, isAuthenticated, myUserId,
         login, register, loadUser, updateProfile, logout,
     }
 })

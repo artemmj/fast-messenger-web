@@ -1,21 +1,34 @@
-<!-- src/components/chat/ChatList.vue -->
 <script setup>
-import { ref } from 'vue'
+import { onMounted } from 'vue'
+import { useChatsStore } from '@/stores/chats'
 
-// Заглушка. Позже заменим на GET /chats из api-слоя
-const chats = ref([
-  { id: 1, title: 'Общий чат', last: 'Привет всем!' },
-  { id: 2, title: 'Иван', last: 'Ты на созвоне завтра?' },
-  { id: 3, title: 'Проект X', last: 'Скинул макеты' },
-])
+const chatsStore = useChatsStore()
+
+onMounted(() => chatsStore.fetchChats())
 </script>
 
 <template>
-  <ul class="chat-list">
-    <li v-for="chat in chats" :key="chat.id">
+  <div v-if="chatsStore.loading && !chatsStore.chats.length" class="chat-list-hint">
+    Загрузка чатов…
+  </div>
+
+  <div v-else-if="chatsStore.error" class="chat-list-hint">
+    {{ chatsStore.error }}
+    <button class="retry" @click="chatsStore.fetchChats(true)">Повторить</button>
+  </div>
+
+  <div v-else-if="!chatsStore.chats.length" class="chat-list-hint">
+    Чатов пока нет
+  </div>
+
+  <ul v-else class="chat-list">
+    <li v-for="chat in chatsStore.chats" :key="chat.id">
       <router-link :to="{ name: 'chat', params: { id: chat.id } }">
-        <strong>{{ chat.title }}</strong>
-        <span>{{ chat.last }}</span>
+        <span class="chat-row-top">
+          <span class="chat-icon">{{ chat.type === 'group' ? '👥' : '👤' }}</span>
+          <strong>{{ chatsStore.chatTitle(chat) }}</strong>
+        </span>
+        <span>{{ chatsStore.chatSubtitle(chat) }}</span>
       </router-link>
     </li>
   </ul>
